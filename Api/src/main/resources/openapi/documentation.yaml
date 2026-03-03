@@ -1,0 +1,95 @@
+openapi: "3.0.0"
+info:
+  title: "API Gestión de PYMES"
+  version: "1.0"
+  description: "CRUD completo con SQLite, Health Check y Login simulado."
+paths:
+  /api/v1/health:
+    get:
+      summary: "Chequeo de Servidor"
+      description: "Verifica si el servidor está respondiendo."
+      responses:
+        '200':
+          description: "Servidor OK"
+  /api/v1/login:
+    post:
+      summary: "Iniciar Sesión"
+      description: "Retorna una API Key."
+      responses:
+        '200':
+          description: "API Key generada"
+  /api/v1/productos:
+    get:
+      summary: "Listar Productos"
+      responses:
+        '200':
+          description: "Lista de todos los productos"
+    post:
+      summary: "Crear Producto"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                nombre:
+                  type: "string"
+                descripcion:
+                  type: "string"
+                precio:
+                  type: "number"
+                cantidadEnStock:
+                  type: "integer"
+      responses:
+        '201':
+          description: "Producto agregado con éxito"
+  /api/v1/productos/{id}:
+    get:
+      summary: "Obtener Producto por ID"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        '200':
+          description: "Datos del producto"
+    put:
+      summary: "Editar Producto"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                nombre:
+                  type: "string"
+                descripcion:
+                  type: "string"
+                precio:
+                  type: "number"
+                cantidadEnStock:
+                  type: "integer"
+      responses:
+        '200':
+          description: "Producto actualizado"
+    delete:
+      summary: "Eliminar Producto"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        '200':
+          description: "Producto eliminado"
