@@ -1,0 +1,12 @@
+services:
+  api-pymes:
+    build:
+      context: .
+    container_name: api-ktor-server
+    ports:
+      - "8080:8080" # Conecta el puerto 8080 de tu compu con el del contenedor
+    volumes:
+      # ESTA ES LA MAGIA: Conecta tu base de datos de Windows con la de Linux (Docker)
+      # Así los datos de SQLite sobreviven aunque apagues Docker.
+      - ./inventario_pymes.db:/app/inventario_pymes.db
+    restart: unless-stopped
