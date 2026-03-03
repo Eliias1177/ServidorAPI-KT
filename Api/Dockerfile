@@ -14,4 +14,4 @@ RUN chmod +x gradlew
 EXPOSE 8080
 
 # 6. Comando final: Encender el servidor (igualito que darle al botón Play)
-CMD ["./gradlew", "run"]
+CMD ["./gradlew", "run", "--no-daemon", "-Dorg.gradle.jvmargs=-Xmx256m"]
