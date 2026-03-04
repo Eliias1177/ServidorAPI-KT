@@ -1,95 +1,269 @@
 openapi: "3.0.0"
 info:
-  title: "API Gestión de PYMES"
+  title: "API Gestión de Inventario"
   version: "1.0"
-  description: "CRUD completo con SQLite, Health Check y Login simulado."
+  description: |
+    CRUD completo de productos con autenticación JWT.
+    
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Pega el token obtenido en /login. Ejemplo: Bearer eyJ..."
+
+  schemas:
+    Producto:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        nombre:
+          type: string
+          example: ""
+        descripcion:
+          type: string
+          example: ""
+        precio:
+          type: number
+          format: double
+          example: 0
+        cantidadEnStock:
+          type: integer
+          example: 0
+
+    ProductoRequest:
+      type: object
+      required:
+        - nombre
+        - descripcion
+        - precio
+        - cantidadEnStock
+      description: "El ID no se envía — la base de datos lo asigna automáticamente"
+      properties:
+        nombre:
+          type: string
+          example: ""
+        descripcion:
+          type: string
+          example: ""
+        precio:
+          type: number
+          format: double
+          example: 0
+        cantidadEnStock:
+          type: integer
+          example: 0
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "elias"
+        password:
+          type: string
+          example: ""
+
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "elias"
+        password:
+          type: string
+          example: ""
+
 paths:
+
   /api/v1/health:
     get:
+      tags:
+        - "🟢 Sistema"
       summary: "Chequeo de Servidor"
-      description: "Verifica si el servidor está respondiendo."
+      description: "Verifica si el servidor está respondiendo. No requiere token."
       responses:
         '200':
           description: "Servidor OK"
-  /api/v1/login:
+          content:
+            text/plain:
+              example: "OK - El servidor está funcionando correctamente"
+
+  /api/v1/register:
     post:
-      summary: "Iniciar Sesión"
-      description: "Retorna una API Key."
-      responses:
-        '200':
-          description: "API Key generada"
-  /api/v1/productos:
-    get:
-      summary: "Listar Productos"
-      responses:
-        '200':
-          description: "Lista de todos los productos"
-    post:
-      summary: "Crear Producto"
+      tags:
+        - "🔐 Autenticación"
+      summary: "Crear cuenta nueva"
+      description: "Registra un nuevo usuario. No requiere token."
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: "object"
-              properties:
-                nombre:
-                  type: "string"
-                descripcion:
-                  type: "string"
-                precio:
-                  type: "number"
-                cantidadEnStock:
-                  type: "integer"
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: "Producto agregado con éxito"
-  /api/v1/productos/{id}:
-    get:
-      summary: "Obtener Producto por ID"
-      parameters:
-        - name: "id"
-          in: "path"
-          required: true
-          schema:
-            type: "integer"
-      responses:
-        '200':
-          description: "Datos del producto"
-    put:
-      summary: "Editar Producto"
-      parameters:
-        - name: "id"
-          in: "path"
-          required: true
-          schema:
-            type: "integer"
+          description: "Usuario creado correctamente"
+          content:
+            application/json:
+              example:
+                mensaje: "Usuario 'elias' creado correctamente"
+        '400':
+          description: "Username o password vacíos"
+        '409':
+          description: "El username ya existe"
+
+  /api/v1/login:
+    post:
+      tags:
+        - "🔐 Autenticación"
+      summary: "Iniciar sesión y obtener token"
+      description: "Retorna un JWT válido por 24 horas. No requiere token."
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: "object"
-              properties:
-                nombre:
-                  type: "string"
-                descripcion:
-                  type: "string"
-                precio:
-                  type: "number"
-                cantidadEnStock:
-                  type: "integer"
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: "Login exitoso — copia el token y úsalo en Authorize 🔓"
+          content:
+            application/json:
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: "Usuario o contraseña incorrectos"
+
+  /api/v1/productos:
+    get:
+      tags:
+        - "📦 Productos"
+      summary: "Listar todos los productos"
+      description: "Retorna todos los productos. 🔒 Requiere token JWT."
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Lista de productos"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Producto'
+        '401':
+          description: "Token inválido o expirado"
+
+    post:
+      tags:
+        - "📦 Productos"
+      summary: "Crear producto nuevo"
+      description: "Agrega un producto al inventario. 🔒 Requiere token JWT."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoRequest'
+      responses:
+        '201':
+          description: "Producto guardado con éxito"
+        '401':
+          description: "Token inválido o expirado"
+
+  /api/v1/productos/{id}:
+    get:
+      tags:
+        - "📦 Productos"
+      summary: "Obtener producto por ID"
+      description: "Busca un producto específico. 🔒 Requiere token JWT."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Producto encontrado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '404':
+          description: "Producto no encontrado"
+        '401':
+          description: "Token inválido o expirado"
+
+    put:
+      tags:
+        - "📦 Productos"
+      summary: "Editar producto"
+      description: "Actualiza los datos de un producto. 🔒 Requiere token JWT."
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoRequest'
+            example:
+              nombre: "Laptop Dell"
+              descripcion: "Laptop de 15 pulgadas con 16GB RAM"
+              precio: 12500.00
+              cantidadEnStock: 10
       responses:
         '200':
           description: "Producto actualizado"
+        '404':
+          description: "Producto no encontrado"
+        '401':
+          description: "Token inválido o expirado"
+
     delete:
-      summary: "Eliminar Producto"
+      tags:
+        - "📦 Productos"
+      summary: "Eliminar producto"
+      description: "Elimina un producto del inventario. 🔒 Requiere token JWT."
+      security:
+        - bearerAuth: []
       parameters:
-        - name: "id"
-          in: "path"
+        - name: id
+          in: path
           required: true
           schema:
-            type: "integer"
+            type: integer
+          example: 1
       responses:
         '200':
           description: "Producto eliminado"
+        '404':
+          description: "Producto no encontrado"
+        '401':
+          description: "Token inválido o expirado"
