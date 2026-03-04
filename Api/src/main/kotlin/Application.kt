@@ -77,7 +77,7 @@ fun Application.module() {
     }
 
     routing {
-        swaggerUI(path = "docs", swaggerFile = "src/main/resources/openapi/documentation.yaml")
+        swaggerUI(path = "docs", swaggerFile = "openapi/documentation.yaml")
 
         get("/") { call.respondRedirect("/docs") }
 
