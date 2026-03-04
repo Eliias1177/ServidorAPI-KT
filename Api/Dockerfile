@@ -1,17 +1,20 @@
-# 1. Usamos la imagen oficial de Java 21 (la misma que usas en tu compu)
-FROM eclipse-temurin:21-jdk-jammy
-
-# 2. Creamos la carpeta donde vivirá nuestro código dentro del contenedor
+# --- Etapa 1: Construcción (El Chef) ---
+FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-
-# 3. Copiamos todos los archivos de tu proyecto hacia adentro del contenedor
 COPY . .
-
-# 4. Le damos permisos a Gradle para que pueda ejecutar comandos
 RUN chmod +x gradlew
+RUN ./gradlew buildFatJar --no-daemon -Dorg.gradle.jvmargs="-Xmx256m"
 
-# 5. Exponemos el puerto 8080 (donde vive tu API y tu Swagger)
+# --- Etapa 2: Ejecución (El Mesero) ---
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
 EXPOSE 8080
 
-# 6. Comando final: Encender el servidor (igualito que darle al botón Play)
-CMD ["./gradlew", "run", "--no-daemon", "-Dorg.gradle.jvmargs=-Xmx256m"]
+# 1. Copiamos el programa ya compilado
+COPY --from=build /app/build/libs/*-all.jar /app/api-pymes.jar
+
+# 2. ¡Copiamos tu base de datos para que no se pierdan tus productos!
+COPY --from=build /app/inventario_pymes.db /app/inventario_pymes.db
+
+# Encendemos la API
+CMD ["java", "-jar", "/app/api-pymes.jar"]
