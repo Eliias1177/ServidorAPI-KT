@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
     application
-    id("io.ktor.plugin") version "2.3.8" // ← Necesario para buildFatJar
+    id("io.ktor.plugin") version "2.3.8"
 }
 
 group = "org.example"
@@ -12,7 +12,6 @@ repositories {
     mavenCentral()
 }
 
-val exposedVersion = "0.44.1"
 val ktorVersion = "2.3.8"
 
 dependencies {
@@ -28,21 +27,18 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
-    // Ktor - Seguridad JWT 🔐
+    // 🔐 Ktor - Autenticación JWT
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
 
-    // Base de datos - Exposed + SQLite
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    // Base de datos SQLite
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")
 
     // Logs
     implementation("ch.qos.logback:logback-classic:1.4.14")
 }
 
-// ← Solo UN bloque kotlin, con Java 21
+// Un solo bloque kotlin con Java 21
 kotlin {
     jvmToolchain(21)
 }
