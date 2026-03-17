@@ -177,6 +177,20 @@ fun Application.module() {
 
                     post {
                         val nuevoProducto = call.receive<ProductoRequest>()
+                        val errores = mutableList<String>()
+                        if (nuevoProducto.nombre.isBlank()) {
+                            errores.add("El nombre es obligatorio")
+                        }
+                        if (nuevoProducto.precio <= 0) {
+                            errores.add("El precio debe ser mayor a 0")
+                        }
+                        if (nuevoProducto.cantidaden Stock < 0) {
+                            errores.add("El stock no puede ser negativo")
+                        }
+                        if (errores.isnotEmpty()) {
+                            call.respond(HttpStatusCode.BadRequest, mapOf("errores" to errores))
+                            return@post
+                        }
                         val conexion = DatabaseManager.conectar()
                         val statement = conexion.prepareStatement(
                             "INSERT INTO productos (nombre, descripcion, precio, cantidadEnStock) VALUES (?, ?, ?, ?)",
