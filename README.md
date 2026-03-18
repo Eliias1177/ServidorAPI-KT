@@ -1,4 +1,4 @@
-# API Gestion de PYMES
+# API Gestion de Inventario
 
 API REST desarrollada con Kotlin + Ktor para gestión de inventario de productos, con autenticación JWT y base de datos SQLite. Desplegada con Docker en Render.
 
