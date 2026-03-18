@@ -6,9 +6,7 @@ API REST desarrollada con Kotlin + Ktor para gestión de inventario de productos
 
 ## Deploy
 
-- **API en vivo:** [Tu URL de Render aquí]
-- **Documentación Swagger:** [Tu URL de Render aquí]/docs
-- **Imagen Docker Hub:** https://hub.docker.com/r/tu_usuario/api-pymes
+- **Imagen Docker Hub:** (https://hub.docker.com/r/eliias1177/api-pymes)
 
 ---
 
